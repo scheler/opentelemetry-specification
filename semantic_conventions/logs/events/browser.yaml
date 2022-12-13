@@ -1,7 +1,6 @@
 groups:
   - id: browser.page_view
     name: page_view
-    prefix: browser
     type: event
     brief: >
       Connection-level attributes for Microsoft SQL Server
@@ -9,11 +8,11 @@ groups:
       - ref: http.url
         examples: ['https://en.wikipedia.org/wiki/Main_Page', 'https://en.wikipedia.org/wiki/Main_Page#foo']
         note: The URL fragment may be included for virtual pages
-      - id: page.referrer
+      - id: referrer
         type: string
         brief: Referrer URL for the browser page (`document.referrer`)
         examples: ['https://en.wikipedia.org/wiki/Main_Page']
-      - id: page.type
+      - id: type
         brief: Browser page type
         requirement_level: required
         type:
@@ -23,12 +22,11 @@ groups:
               value: 0
             - id: virtual_page
               value: 1
-      - id: page.user_consent
+      - id: user_consent
         type: boolean
         brief: Whether or not user provided consent on the page (consent for what?)
   - id: browser.ajax
     name: ajax
-    prefix: browser
     type: event
     brief: >
       Connection-level attributes for Microsoft SQL Server
@@ -88,7 +86,7 @@ groups:
         type: string
         brief: Target element xpath
         examples: ['//*[@id="testBtn"]']
-      - id: user_action.type
+      - id: user_action_type
         type: string
         brief: Type of interaction. See enum [here](https://github.com/microsoft/ApplicationInsights-JS/blob/941ec2e4dbd017b8450f2b17c60088ead1e6c428/extensions/applicationinsights-clickanalytics-js/src/Enums.ts)
         examples: ['clickleft']
