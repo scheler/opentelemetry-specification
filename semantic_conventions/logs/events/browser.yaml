@@ -1,4 +1,70 @@
 groups:
+  - id: browser.resource
+    name: BrowserResource
+    type: event
+    brief: >
+      Resource attributes of Browser
+    attributes:
+      - ref: telemetry.sdk.name
+      - ref: telemetry.sdk.language
+      - ref: telemetry.sdk.version
+      - ref: browser.brands
+      - ref: browser.platform
+      - ref: browser.mobile
+      - ref: browser.language
+      - ref: browser.user_agent
+      - ref: service.name
+        brief: Application name. Will be provided by customer.
+      - ref: service.version
+        brief: Application version. Will be provided by customer.
+      - ref: service.instance.id
+        brief: >
+          Unique ID generated on page load for the lifetime of the document
+          (eg. persistent during SPA)
+      - id: browser.visitor.id
+        type: string
+        brief: >
+          Anonymous user id - will be the same for a given browser session.
+          It will persist across page navigations in the same browser session.
+        examples: ["is this a GUID?"]
+
+      # TODO: clarify the following.
+      # - id: schema.version
+      #  type: string
+      #  brief: The schema version for this event type
+
+  - id: browser.resource_varying
+    name: BrowserResourceVarying
+    type: event
+    brief: >
+      Varying resource attributes of Browser
+    attributes:
+      - id: browser.screen_width
+        type: int
+        brief: Window width
+      - id: screen_height
+        type: int
+        brief: Window height
+      # TODO: need a top level namespace
+      - id: session.id
+        type: string
+        brief: Session identifier
+        examples: ["Is this a GUID?"]
+      - ref: enduser.id
+        note: Authenticated user id
+      - id: browser.page.url
+        type: string
+        brief: URL of the current active page
+        examples: ["https://en.wikipedia.org/wiki/Main_Page"]
+      - id: browser.page.impression_id
+        type: string
+        brief: >
+          Unique impression id for the page impression, represented by a GUID.
+          Eg: Page.html will yield 4 impression ids if the page is refreshed 4
+          times in the same browser instance.
+          Could change in SPA usage (when url changes -> new impression)
+        examples: ["GUID"]
+
   - id: browser.page_view
     name: page_view
     type: event
@@ -10,7 +76,7 @@ groups:
         note: The URL fragment may be included for virtual pages
       - id: referrer
         type: string
-        brief: Referrer URL for the browser page (`document.referrer`)
+        brief: Referring Page URI (`document.referrer`) whenever available.
         examples: ['https://en.wikipedia.org/wiki/Main_Page']
       - id: type
         brief: Browser page type
@@ -39,10 +105,6 @@ groups:
       # TODO: Add the following to http sem conv
       # - ref: http.response_content_length_uncompressed
       # TODO: how do we add http.request.header.<key> and http.response.header.<key> here
-      - id: page.url
-        type: string
-        brief: The URL of the page that made the Ajax call
-        examples: ['https://en.wikipedia.org/wiki/Main_Page']
       - id: request_type
         brief: Ajax request type
         requirement_level: required
@@ -69,10 +131,10 @@ groups:
         examples: ['foo.js']
       - id: line_number
         type: int
-        brief: Name of the file that generated the error
+        brief: Line number where the error occurred
       - id: column_number
         type: int
-        brief: Name of the file that generated the error
+        brief: Column number where the error occurred
   - id: browser.user_action
     name: user_action
     type: event

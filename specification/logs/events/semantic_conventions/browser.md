@@ -9,30 +9,90 @@
 
 <!-- toc -->
 
-- [Page View](#page-view)
-- [Ajax](#ajax)
-- [Exception](#exception)
-- [UserAction](#useraction)
-- [PageNavigationTiming](#pagenavigationtiming)
-- [AjaxTiming](#ajaxtiming)
-- [ResourceTiming](#resourcetiming)
+- [Resource](#resource)
+  * [Resource](#resource-1)
+  * [ResourceVarying](#resourcevarying)
+- [Events](#events)
+  * [PageView](#pageview)
+  * [Ajax](#ajax)
+  * [Exception](#exception)
+  * [UserAction](#useraction)
+  * [PageNavigationTiming](#pagenavigationtiming)
+  * [AjaxTiming](#ajaxtiming)
+  * [ResourceTiming](#resourcetiming)
 
 <!-- tocstop -->
 
 </details>
 
 
-This document describes the semantic conventions for browser events. The events may be represented either as Span Events or Log Events.
+This document describes the semantic conventions for browser resource and events.
+
+# Resource
+
+## Resource
+<!-- semconv browser.resource -->
+The event name MUST be `BrowserResource`.
+
+| Key  | Type | Description  | Examples  | Requirement Level |
+|---|---|---|---|---|
+| `browser.visitor.id` | string | Anonymous user id - will be the same for a given browser session. It will persist across page navigations in the same browser session. | `is this a GUID?` | Recommended |
+| [`browser.brands`](../../../resource/semantic_conventions/browser.md) | string[] | Array of brand name and version separated by a space [1] | `[ Not A;Brand 99, Chromium 99, Chrome 99]` | Recommended |
+| [`browser.language`](../../../resource/semantic_conventions/browser.md) | string | Preferred language of the user using the browser [2] | `en`; `en-US`; `fr`; `fr-FR` | Recommended |
+| [`browser.mobile`](../../../resource/semantic_conventions/browser.md) | boolean | A boolean that is true if the browser is running on a mobile device [3] |  | Recommended |
+| [`browser.platform`](../../../resource/semantic_conventions/browser.md) | string | The platform on which the browser is running [4] | `Windows`; `macOS`; `Android` | Recommended |
+| [`browser.user_agent`](../../../resource/semantic_conventions/browser.md) | string | Full user-agent string provided by the browser [5] | `Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.54 Safari/537.36` | Recommended |
+| [`service.instance.id`](../../../resource/semantic_conventions/README.md) | string | Unique ID generated on page load for the lifetime of the document (eg. persistent during SPA) [6] | `627cc493-f310-47de-96bd-71410b7dec09` | Recommended |
+| [`service.name`](../../../resource/semantic_conventions/README.md) | string | Application name. Will be provided by customer. [7] | `shoppingcart` | Required |
+| [`service.version`](../../../resource/semantic_conventions/README.md) | string | Application version. Will be provided by customer. | `2.0.0` | Recommended |
+| [`telemetry.sdk.language`](../../../resource/semantic_conventions/README.md) | string | The language of the telemetry SDK. | `cpp` | Recommended |
+| [`telemetry.sdk.name`](../../../resource/semantic_conventions/README.md) | string | The name of the telemetry SDK as defined above. | `opentelemetry` | Recommended |
+| [`telemetry.sdk.version`](../../../resource/semantic_conventions/README.md) | string | The version string of the telemetry SDK. | `1.2.3` | Recommended |
+
+**[1]:** This value is intended to be taken from the [UA client hints API](https://wicg.github.io/ua-client-hints/#interface) (`navigator.userAgentData.brands`).
+
+**[2]:** This value is intended to be taken from the Navigator API `navigator.language`.
+
+**[3]:** This value is intended to be taken from the [UA client hints API](https://wicg.github.io/ua-client-hints/#interface) (`navigator.userAgentData.mobile`). If unavailable, this attribute SHOULD be left unset.
+
+**[4]:** This value is intended to be taken from the [UA client hints API](https://wicg.github.io/ua-client-hints/#interface) (`navigator.userAgentData.platform`). If unavailable, the legacy `navigator.platform` API SHOULD NOT be used instead and this attribute SHOULD be left unset in order for the values to be consistent.
+The list of possible values is defined in the [W3C User-Agent Client Hints specification](https://wicg.github.io/ua-client-hints/#sec-ch-ua-platform). Note that some (but not all) of these values can overlap with values in the [`os.type` and `os.name` attributes](./os.md). However, for consistency, the values in the `browser.platform` attribute should capture the exact value that the user agent provides.
+
+**[5]:** The user-agent value SHOULD be provided only from browsers that do not have a mechanism to retrieve brands and platform individually from the User-Agent Client Hints API. To retrieve the value, the legacy `navigator.userAgent` API can be used.
+
+**[6]:** MUST be unique for each instance of the same `service.namespace,service.name` pair (in other words `service.namespace,service.name,service.instance.id` triplet MUST be globally unique). The ID helps to distinguish instances of the same service that exist at the same time (e.g. instances of a horizontally scaled service). It is preferable for the ID to be persistent and stay the same for the lifetime of the service instance, however it is acceptable that the ID is ephemeral and changes during important lifetime events for the service (e.g. service restarts). If the service has no inherent unique ID that can be used as the value of this attribute it is recommended to generate a random Version 1 or Version 4 RFC 4122 UUID (services aiming for reproducible UUIDs may also use Version 5, see RFC 4122 for more recommendations).
+
+**[7]:** MUST be the same for all instances of horizontally scaled services. If the value was not specified, SDKs MUST fallback to `unknown_service:` concatenated with [`process.executable.name`](process.md#process), e.g. `unknown_service:bash`. If `process.executable.name` is not available, the value MUST be set to `unknown_service`.
+<!-- endsemconv -->
+
+## ResourceVarying
+
+<!-- semconv browser.resource_varying -->
+The event name MUST be `BrowserResourceVarying`.
+
+| Key  | Type | Description  | Examples  | Requirement Level |
+|---|---|---|---|---|
+| `browser.screen_width` | int | Window width |  | Recommended |
+| `screen_height` | int | Window height |  | Recommended |
+| `session.id` | string | Session identifier | `Is this a GUID?` | Recommended |
+| `browser.page.url` | string | URL of the current active page | `https://en.wikipedia.org/wiki/Main_Page` | Recommended |
+| `browser.page.impression_id` | string | Unique impression id for the page impression, represented by a GUID. Eg: Page.html will yield 4 impression ids if the page is refreshed 4 times in the same browser instance. Could change in SPA usage (when url changes -> new impression) | `GUID` | Recommended |
+| [`enduser.id`](../../../trace/semantic_conventions/span-general.md) | string | Username or client_id extracted from the access token or [Authorization](https://tools.ietf.org/html/rfc7235#section-4.2) header in the inbound request from outside the system. [1] | `username` | Recommended |
+
+**[1]:** Authenticated user id
+<!-- endsemconv -->
+
+# Events
+
+The events may be represented either as Span Events or Log Events.
 
 All events have the following three high-level attributes. The event name is specified at the beginning of each section below. The payload of the event goes in a nested attribute called `event.data`. `event.data' for each event is listed below.
 
-| Key  | Value | Description  |
-|---|---|---|
-| `event.domain` | browser | Fixed value |
-| `event.name` | | Described in each section below|
-| `event.data` | | A map of key/value pairs, with the keys for each event described in following sections|
-
-
+| Key  | Type | Description  | Examples  | Requirement Level |
+|---|---|---|---|---|
+| `event.domain` | string | Fixed value: browser ||Required|
+| `event.name` | string | Described in each section below||Required|
+| `event.data` | map | A map of key/value pairs, with the keys for each event described in following sections||Recommended|
 
 ## PageView
 
@@ -41,7 +101,7 @@ The event name MUST be `page_view`.
 
 | Key  | Type | Description  | Examples  | Requirement Level |
 |---|---|---|---|---|
-| `referrer` | string | Referrer URL for the browser page (`document.referrer`) | `https://en.wikipedia.org/wiki/Main_Page` | Recommended |
+| `referrer` | string | Referring Page URI (`document.referrer`) whenever available. | `https://en.wikipedia.org/wiki/Main_Page` | Recommended |
 | `type` | int | Browser page type | `0` | Required |
 | `user_consent` | boolean | Whether or not user provided consent on the page (consent for what?) |  | Recommended |
 | [`http.url`](../../../trace/semantic_conventions/http.md) | string | Full HTTP request URL in the form `scheme://host[:port]/path?query[#fragment]`. Usually the fragment is not transmitted over HTTP, but if it is known, it should be included nevertheless. [1] | `https://en.wikipedia.org/wiki/Main_Page`; `https://en.wikipedia.org/wiki/Main_Page#foo` | Required |
@@ -63,7 +123,6 @@ The event name MUST be `ajax`.
 
 | Key  | Type | Description  | Examples  | Requirement Level |
 |---|---|---|---|---|
-| `page.url` | string | The URL of the page that made the Ajax call | `https://en.wikipedia.org/wiki/Main_Page` | Recommended |
 | `type` | int | Ajax request type | `0` | Required |
 | [`http.method`](../../../trace/semantic_conventions/http.md) | string | HTTP request method. | `GET`; `POST`; `HEAD` | Required |
 | [`http.request_content_length`](../../../trace/semantic_conventions/http.md) | int | The size of the request payload body in bytes. This is the number of bytes transferred excluding headers and is often, but not always, present as the [Content-Length](https://www.rfc-editor.org/rfc/rfc9110.html#field.content-length) header. For requests using transport encoding, this should be the compressed size. | `3495` | Recommended |
