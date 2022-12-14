@@ -24,7 +24,7 @@
 
 This document describes the semantic conventions for browser events. The events may be represented either as Span Events or Log Events.
 
-All events have the following three high-level attributes. The domain has a fixed value of `browser`. The event name is specified at the beginning of each section below. The payload of the event goes in an attribute called `event.data` and the fields described below for each event go into this attribute.
+All events have the following three high-level attributes. The event name is specified at the beginning of each section below. The payload of the event goes in a nested attribute called `event.data`. `event.data' for each event is listed below.
 
 | Key  | Value | Description  |
 |---|---|---|
