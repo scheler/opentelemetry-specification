@@ -90,7 +90,7 @@ The event name MUST be `exception`.
 |---|---|---|---|---|
 | `file_name` | string | Name of the file that generated the error | `foo.js` | Recommended |
 | `line_number` | int | Name of the file that generated the error |  | Recommended |
-| `column_number` | int | Name of the file that generated the error |  | Recommended |
+| `column_number` | int | Column number where the error occurred |  | Recommended |
 | `exception.message` | string | The exception message. | `Division by zero`; `Can't convert 'int' object to str implicitly` | Recommended |
 | `exception.stacktrace` | string | A stacktrace as a string in the natural representation for the language runtime. The representation is to be determined and documented by each language SIG. | `Exception in thread "main" java.lang.RuntimeException: Test exception\n at com.example.GenerateTrace.methodB(GenerateTrace.java:13)\n at com.example.GenerateTrace.methodA(GenerateTrace.java:9)\n at com.example.GenerateTrace.main(GenerateTrace.java:5)` | Recommended |
 | `exception.type` | string | The type of the exception (its fully-qualified class name, if applicable). The dynamic type of the exception should be preferred over the static type in languages that support it. | `java.net.ConnectException`; `OSError` | Recommended |
