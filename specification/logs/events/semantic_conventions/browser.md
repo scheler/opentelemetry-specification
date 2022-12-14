@@ -34,7 +34,7 @@ All events have the following three high-level attributes. The domain has a fixe
 
 
 
-## Page View
+## PageView
 
 <!-- semconv browser.page_view -->
 The event name MUST be `page_view`.
