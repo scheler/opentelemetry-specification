@@ -14,12 +14,14 @@
   * [ResourceVarying](#resourcevarying)
 - [Events](#events)
   * [PageView](#pageview)
-  * [Ajax](#ajax)
+  * [PageLoad](#pageload)
+  * [PageNavigationTiming](#pagenavigationtiming)
+  * [ResourceTiming](#resourcetiming)
+  * [HTTP](#http)
+    + [HTTP request and response headers](#http-request-and-response-headers)
+  * [HttpRequestTiming](#httprequesttiming)
   * [Exception](#exception)
   * [UserAction](#useraction)
-  * [PageNavigationTiming](#pagenavigationtiming)
-  * [AjaxTiming](#ajaxtiming)
-  * [ResourceTiming](#resourcetiming)
 
 <!-- tocstop -->
 
@@ -103,6 +105,7 @@ The event name MUST be `page_view`.
 |---|---|---|---|---|
 | `referrer` | string | Referring Page URI (`document.referrer`) whenever available. | `https://en.wikipedia.org/wiki/Main_Page` | Recommended |
 | `type` | int | Browser page type | `0` | Required |
+| `title` | string | Page title DOM property | `Shopping cart page` | Recommended |
 | `user_consent` | boolean | Whether or not user provided consent on the page (consent for what?) |  | Recommended |
 | [`http.url`](../../../trace/semantic_conventions/http.md) | string | Full HTTP request URL in the form `scheme://host[:port]/path?query[#fragment]`. Usually the fragment is not transmitted over HTTP, but if it is known, it should be included nevertheless. [1] | `https://en.wikipedia.org/wiki/Main_Page`; `https://en.wikipedia.org/wiki/Main_Page#foo` | Required |
 
@@ -116,58 +119,18 @@ The event name MUST be `page_view`.
 | `1` | virtual_page |
 <!-- endsemconv -->
 
-## Ajax
+## PageLoad
 
-<!-- semconv browser.ajax -->
-The event name MUST be `ajax`.
-
-| Key  | Type | Description  | Examples  | Requirement Level |
-|---|---|---|---|---|
-| `type` | int | Ajax request type | `0` | Required |
-| [`http.method`](../../../trace/semantic_conventions/http.md) | string | HTTP request method. | `GET`; `POST`; `HEAD` | Required |
-| [`http.request_content_length`](../../../trace/semantic_conventions/http.md) | int | The size of the request payload body in bytes. This is the number of bytes transferred excluding headers and is often, but not always, present as the [Content-Length](https://www.rfc-editor.org/rfc/rfc9110.html#field.content-length) header. For requests using transport encoding, this should be the compressed size. | `3495` | Recommended |
-| [`http.response_content_length`](../../../trace/semantic_conventions/http.md) | int | The size of the response payload body in bytes. This is the number of bytes transferred excluding headers and is often, but not always, present as the [Content-Length](https://www.rfc-editor.org/rfc/rfc9110.html#field.content-length) header. For requests using transport encoding, this should be the compressed size. | `3495` | Recommended |
-| [`http.status_code`](../../../trace/semantic_conventions/http.md) | int | [HTTP response status code](https://tools.ietf.org/html/rfc7231#section-6). | `200` | Conditionally Required: If and only if one was received/sent. |
-| [`http.url`](../../../trace/semantic_conventions/http.md) | string | Full HTTP request URL in the form `scheme://host[:port]/path?query[#fragment]`. Usually the fragment is not transmitted over HTTP, but if it is known, it should be included nevertheless. [1] | `https://www.foo.bar/search?q=OpenTelemetry#SemConv` | Required |
-
-**[1]:** `http.url` MUST NOT contain credentials passed via URL in form of `https://username:password@www.example.com/`. In such case the attribute's value should be `https://www.example.com/`.
-
-`type` MUST be one of the following:
-
-| Value  | Description |
-|---|---|
-| `0` | fetch |
-| `1` | xhr |
-<!-- endsemconv -->
-
-## Exception
-
-<!-- semconv browser.exception -->
-The event name MUST be `exception`.
+<!-- semconv browser.page_load -->
+The event name MUST be `page_load`.
 
 | Key  | Type | Description  | Examples  | Requirement Level |
 |---|---|---|---|---|
-| `file_name` | string | Name of the file that generated the error | `foo.js` | Recommended |
-| `line_number` | int | Line number where the error occurred |  | Recommended |
-| `column_number` | int | Column number where the error occurred |  | Recommended |
-| `exception.message` | string | The exception message. | `Division by zero`; `Can't convert 'int' object to str implicitly` | Recommended |
-| `exception.stacktrace` | string | A stacktrace as a string in the natural representation for the language runtime. The representation is to be determined and documented by each language SIG. | `Exception in thread "main" java.lang.RuntimeException: Test exception\n at com.example.GenerateTrace.methodB(GenerateTrace.java:13)\n at com.example.GenerateTrace.methodA(GenerateTrace.java:9)\n at com.example.GenerateTrace.main(GenerateTrace.java:5)` | Recommended |
-| `exception.type` | string | The type of the exception (its fully-qualified class name, if applicable). The dynamic type of the exception should be preferred over the static type in languages that support it. | `java.net.ConnectException`; `OSError` | Recommended |
+| [`http.url`](../../../trace/semantic_conventions/http.md) | string | Full HTTP request URL in the form `scheme://host[:port]/path?query[#fragment]`. Usually the fragment is not transmitted over HTTP, but if it is known, it should be included nevertheless. [1] | `https://en.wikipedia.org/wiki/Main_Page`; `https://en.wikipedia.org/wiki/Main_Page#foo` | Required |
+
+**[1]:** The URL fragment may be included for virtual pages
 <!-- endsemconv -->
 
-## UserAction
-
-<!-- semconv browser.user_action -->
-The event name MUST be `user_action`.
-
-| Key  | Type | Description  | Examples  | Requirement Level |
-|---|---|---|---|---|
-| `element` | string | Target element tag name (obtained via `event.target.tagName`) | `button` | Recommended |
-| `element_xpath` | string | Target element xpath | `//*[@id="testBtn"]` | Recommended |
-| `type` | string | Type of interaction. See enum [here](https://github.com/microsoft/ApplicationInsights-JS/blob/941ec2e4dbd017b8450f2b17c60088ead1e6c428/extensions/applicationinsights-clickanalytics-js/src/Enums.ts) | `clickleft` | Recommended |
-| `click_coordinates` | string | Click coordinates captured as a string in the format {x}X{y}.  Eg. 345X23 | `345X23` | Recommended |
-| `tags` | string[] | Grab data from data-otel-* attributes in tree | `[data-otel-asd="value" -> asd attr w/ "value"]` | Recommended |
-<!-- endsemconv -->
 
 ## PageNavigationTiming
 
@@ -188,24 +151,6 @@ The event name MUST be `user_action`.
 | firstContentfulPaint | long | || Recommended |
 
 
-## AjaxTiming
-
-`event.name` is `ajax_timing`
-
-| Key  | Type | Description  | Examples  | Requirement Level |
-|---|---|---|---|---|
-| open | long | || Recommended |
-| send | long | || Recommended |
-| domainLookupStart | long | || Recommended |
-| domainLookupEnd | long | || Recommended |
-| connectStart | long | || Recommended |
-| secureConnectionStart | long | || Recommended |
-| connectEnd | long | || Recommended |
-| requestStart | long | || Recommended |
-| responseStart | long | || Recommended |
-| responseEnd | long | || Recommended |
-| loaded | long | || Recommended |
-
 ## ResourceTiming
 
 `event.name` is `resource_timing`
@@ -221,4 +166,92 @@ The event name MUST be `user_action`.
 |requestStart | long | || Recommended |
 |responseStart | long | || Recommended |
 |responseEnd | long | || Recommended |
+
+
+## HTTP
+
+<!-- semconv browser.http -->
+The event name MUST be `HTTP`.
+
+| Key  | Type | Description  | Examples  | Requirement Level |
+|---|---|---|---|---|
+| `type` | int | Request type | `0` | Required |
+| `http.response_content_length_uncompressed` | int | length of the response after it's uncompressed | `23421` | Recommended |
+| [`http.method`](../../../trace/semantic_conventions/http.md) | string | HTTP request method. | `GET`; `POST`; `HEAD` | Required |
+| [`http.request_content_length`](../../../trace/semantic_conventions/http.md) | int | The size of the request payload body in bytes. This is the number of bytes transferred excluding headers and is often, but not always, present as the [Content-Length](https://www.rfc-editor.org/rfc/rfc9110.html#field.content-length) header. For requests using transport encoding, this should be the compressed size. | `3495` | Recommended |
+| [`http.response_content_length`](../../../trace/semantic_conventions/http.md) | int | The size of the response payload body in bytes. This is the number of bytes transferred excluding headers and is often, but not always, present as the [Content-Length](https://www.rfc-editor.org/rfc/rfc9110.html#field.content-length) header. For requests using transport encoding, this should be the compressed size. | `3495` | Recommended |
+| [`http.status_code`](../../../trace/semantic_conventions/http.md) | int | [HTTP response status code](https://tools.ietf.org/html/rfc7231#section-6). | `200` | Conditionally Required: If and only if one was received/sent. |
+| [`http.url`](../../../trace/semantic_conventions/http.md) | string | Full HTTP request URL in the form `scheme://host[:port]/path?query[#fragment]`. Usually the fragment is not transmitted over HTTP, but if it is known, it should be included nevertheless. [1] | `https://www.foo.bar/search?q=OpenTelemetry#SemConv` | Required |
+
+**[1]:** `http.url` MUST NOT contain credentials passed via URL in form of `https://username:password@www.example.com/`. In such case the attribute's value should be `https://www.example.com/`.
+
+`type` MUST be one of the following:
+
+| Value  | Description |
+|---|---|
+| `0` | fetch |
+| `1` | xhr |
+| `2` | send_beacon |
+<!-- endsemconv -->
+
+### HTTP request and response headers
+
+| Key  | Type | Description  | Examples  | Requirement Level |
+|---|---|---|---|---|
+| `http.request.header.<key>` | string[] | HTTP request headers, `<key>` being the normalized HTTP Header name (lowercase, with `-` characters replaced by `_`), the value being the header values. [1] [2] | `http.request.header.content_type=["application/json"]`; `http.request.header.x_forwarded_for=["1.2.3.4", "1.2.3.5"]` | Optional |
+| `http.response.header.<key>` | string[] | HTTP response headers, `<key>` being the normalized HTTP Header name (lowercase, with `-` characters replaced by `_`), the value being the header values. [1] [2] | `http.response.header.content_type=["application/json"]`; `http.response.header.my_custom_header=["abc", "def"]` | Optional |
+
+**[1]:** Instrumentations SHOULD require an explicit configuration of which headers are to be captured.
+Including all request/response headers can be a security risk - explicit configuration helps avoid leaking sensitive information.
+
+The `User-Agent` header is already captured in the `http.user_agent` attribute.
+Users MAY explicitly configure instrumentations to capture them even though it is not recommended.
+
+## HttpRequestTiming
+
+`event.name` is `http_request_timing`
+
+| Key  | Type | Description  | Examples  | Requirement Level |
+|---|---|---|---|---|
+| open | long | || Recommended |
+| send | long | || Recommended |
+| domainLookupStart | long | || Recommended |
+| domainLookupEnd | long | || Recommended |
+| connectStart | long | || Recommended |
+| secureConnectionStart | long | || Recommended |
+| connectEnd | long | || Recommended |
+| requestStart | long | || Recommended |
+| responseStart | long | || Recommended |
+| responseEnd | long | || Recommended |
+| loaded | long | || Recommended |
+
+
+## Exception
+
+<!-- semconv browser.exception -->
+The event name MUST be `exception`.
+
+| Key  | Type | Description  | Examples  | Requirement Level |
+|---|---|---|---|---|
+| `exception.file_name` | string | Name of the file that generated the error | `foo.js` | Recommended |
+| `exception.line_number` | int | Line number where the error occurred |  | Recommended |
+| `exception.column_number` | int | Column number where the error occurred |  | Recommended |
+| `exception.message` | string | The exception message. | `Division by zero`; `Can't convert 'int' object to str implicitly` | Recommended |
+| `exception.stacktrace` | string | A stacktrace as a string in the natural representation for the language runtime. The representation is to be determined and documented by each language SIG. | `Exception in thread "main" java.lang.RuntimeException: Test exception\n at com.example.GenerateTrace.methodB(GenerateTrace.java:13)\n at com.example.GenerateTrace.methodA(GenerateTrace.java:9)\n at com.example.GenerateTrace.main(GenerateTrace.java:5)` | Recommended |
+| `exception.type` | string | The type of the exception (its fully-qualified class name, if applicable). The dynamic type of the exception should be preferred over the static type in languages that support it. | `java.net.ConnectException`; `OSError` | Recommended |
+<!-- endsemconv -->
+
+## UserAction
+
+<!-- semconv browser.user_action -->
+The event name MUST be `user_action`.
+
+| Key  | Type | Description  | Examples  | Requirement Level |
+|---|---|---|---|---|
+| `element` | string | Target element tag name (obtained via `event.target.tagName`) | `button` | Recommended |
+| `element_xpath` | string | Target element xpath | `//*[@id="testBtn"]` | Recommended |
+| `type` | string | Type of interaction. See enum [here](https://github.com/microsoft/ApplicationInsights-JS/blob/941ec2e4dbd017b8450f2b17c60088ead1e6c428/extensions/applicationinsights-clickanalytics-js/src/Enums.ts) | `clickleft` | Recommended |
+| `click_coordinates` | string | Click coordinates captured as a string in the format {x}X{y}.  Eg. 345X23 | `345X23` | Recommended |
+| `tags` | string[] | Grab data from data-otel-* attributes in tree | `[data-otel-asd="value" -> asd attr w/ "value"]` | Recommended |
+<!-- endsemconv -->
 

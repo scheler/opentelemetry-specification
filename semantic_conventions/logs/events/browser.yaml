@@ -68,8 +68,7 @@ groups:
   - id: browser.page_view
     name: page_view
     type: event
-    brief: >
-      Connection-level attributes for Microsoft SQL Server
+    brief: Page view
     attributes:
       - ref: http.url
         examples: ['https://en.wikipedia.org/wiki/Main_Page', 'https://en.wikipedia.org/wiki/Main_Page#foo']
@@ -88,14 +87,27 @@ groups:
               value: 0
             - id: virtual_page
               value: 1
+      - id: title
+        type: string
+        brief: Page title DOM property
+        examples: ["Shopping cart page"]
       - id: user_consent
         type: boolean
         brief: Whether or not user provided consent on the page (consent for what?)
-  - id: browser.ajax
-    name: ajax
+  - id: browser.page_load
+    name: page_load
+    type: event
+    brief: The encompassing span for a Page Load
+    attributes:
+      - ref: http.url
+        examples: ['https://en.wikipedia.org/wiki/Main_Page', 'https://en.wikipedia.org/wiki/Main_Page#foo']
+        note: The URL fragment may be included for virtual pages
+
+  - id: browser.http
+    name: HTTP
     type: event
     brief: >
-      Connection-level attributes for Microsoft SQL Server
+      HTTP Request of different kinds (xml-http-request, fetch, sendBeacon, etc)
     attributes:
       - ref: http.url
       - ref: http.method
@@ -106,7 +118,7 @@ groups:
       # - ref: http.response_content_length_uncompressed
       # TODO: how do we add http.request.header.<key> and http.response.header.<key> here
       - id: request_type
-        brief: Ajax request type
+        brief: Request type
         requirement_level: required
         type:
           allow_custom_values: false
@@ -115,6 +127,12 @@ groups:
               value: 0
             - id: xhr
               value: 1
+            - id: send_beacon
+              value: 2
+      - id: http.response_content_length_uncompressed
+        type: int
+        brief: length of the response after it's uncompressed
+        examples: [23421]
   - id: browser.exception
     name: exception
     type: event
@@ -125,14 +143,14 @@ groups:
       - ref: exception.stacktrace
       # The following attributes are without a namespace
       # Should we use the prefix `browser.exception`?
-      - id: file_name
+      - id: exception.file_name
         type: string
         brief: Name of the file that generated the error
         examples: ['foo.js']
-      - id: line_number
+      - id: exception.line_number
         type: int
         brief: Line number where the error occurred
-      - id: column_number
+      - id: exception.column_number
         type: int
         brief: Column number where the error occurred
   - id: browser.user_action
