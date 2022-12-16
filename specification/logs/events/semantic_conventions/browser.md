@@ -9,9 +9,6 @@
 
 <!-- toc -->
 
-- [Resource](#resource)
-  * [Resource](#resource-1)
-  * [ResourceVarying](#resourcevarying)
 - [Events](#events)
   * [PageView](#pageview)
   * [PageLoad](#pageload)
@@ -22,6 +19,9 @@
   * [HttpRequestTiming](#httprequesttiming)
   * [Exception](#exception)
   * [UserAction](#useraction)
+- [Resource](#resource)
+  * [Resource](#resource-1)
+  * [ResourceVarying](#resourcevarying)
 
 <!-- tocstop -->
 
@@ -29,60 +29,6 @@
 
 
 This document describes the semantic conventions for browser resource and events.
-
-# Resource
-
-## Resource
-<!-- semconv browser.resource -->
-The event name MUST be `BrowserResource`.
-
-| Key  | Type | Description  | Examples  | Requirement Level |
-|---|---|---|---|---|
-| `browser.visitor.id` | string | Anonymous user id - will be the same for a given browser session. It will persist across page navigations in the same browser session. | `is this a GUID?` | Recommended |
-| [`browser.brands`](../../../resource/semantic_conventions/browser.md) | string[] | Array of brand name and version separated by a space [1] | `[ Not A;Brand 99, Chromium 99, Chrome 99]` | Recommended |
-| [`browser.language`](../../../resource/semantic_conventions/browser.md) | string | Preferred language of the user using the browser [2] | `en`; `en-US`; `fr`; `fr-FR` | Recommended |
-| [`browser.mobile`](../../../resource/semantic_conventions/browser.md) | boolean | A boolean that is true if the browser is running on a mobile device [3] |  | Recommended |
-| [`browser.platform`](../../../resource/semantic_conventions/browser.md) | string | The platform on which the browser is running [4] | `Windows`; `macOS`; `Android` | Recommended |
-| [`browser.user_agent`](../../../resource/semantic_conventions/browser.md) | string | Full user-agent string provided by the browser [5] | `Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.54 Safari/537.36` | Recommended |
-| [`service.instance.id`](../../../resource/semantic_conventions/README.md) | string | Unique ID generated on page load for the lifetime of the document (eg. persistent during SPA) [6] | `627cc493-f310-47de-96bd-71410b7dec09` | Recommended |
-| [`service.name`](../../../resource/semantic_conventions/README.md) | string | Application name. Will be provided by customer. [7] | `shoppingcart` | Required |
-| [`service.version`](../../../resource/semantic_conventions/README.md) | string | Application version. Will be provided by customer. | `2.0.0` | Recommended |
-| [`telemetry.sdk.language`](../../../resource/semantic_conventions/README.md) | string | The language of the telemetry SDK. | `cpp` | Recommended |
-| [`telemetry.sdk.name`](../../../resource/semantic_conventions/README.md) | string | The name of the telemetry SDK as defined above. | `opentelemetry` | Recommended |
-| [`telemetry.sdk.version`](../../../resource/semantic_conventions/README.md) | string | The version string of the telemetry SDK. | `1.2.3` | Recommended |
-
-**[1]:** This value is intended to be taken from the [UA client hints API](https://wicg.github.io/ua-client-hints/#interface) (`navigator.userAgentData.brands`).
-
-**[2]:** This value is intended to be taken from the Navigator API `navigator.language`.
-
-**[3]:** This value is intended to be taken from the [UA client hints API](https://wicg.github.io/ua-client-hints/#interface) (`navigator.userAgentData.mobile`). If unavailable, this attribute SHOULD be left unset.
-
-**[4]:** This value is intended to be taken from the [UA client hints API](https://wicg.github.io/ua-client-hints/#interface) (`navigator.userAgentData.platform`). If unavailable, the legacy `navigator.platform` API SHOULD NOT be used instead and this attribute SHOULD be left unset in order for the values to be consistent.
-The list of possible values is defined in the [W3C User-Agent Client Hints specification](https://wicg.github.io/ua-client-hints/#sec-ch-ua-platform). Note that some (but not all) of these values can overlap with values in the [`os.type` and `os.name` attributes](./os.md). However, for consistency, the values in the `browser.platform` attribute should capture the exact value that the user agent provides.
-
-**[5]:** The user-agent value SHOULD be provided only from browsers that do not have a mechanism to retrieve brands and platform individually from the User-Agent Client Hints API. To retrieve the value, the legacy `navigator.userAgent` API can be used.
-
-**[6]:** MUST be unique for each instance of the same `service.namespace,service.name` pair (in other words `service.namespace,service.name,service.instance.id` triplet MUST be globally unique). The ID helps to distinguish instances of the same service that exist at the same time (e.g. instances of a horizontally scaled service). It is preferable for the ID to be persistent and stay the same for the lifetime of the service instance, however it is acceptable that the ID is ephemeral and changes during important lifetime events for the service (e.g. service restarts). If the service has no inherent unique ID that can be used as the value of this attribute it is recommended to generate a random Version 1 or Version 4 RFC 4122 UUID (services aiming for reproducible UUIDs may also use Version 5, see RFC 4122 for more recommendations).
-
-**[7]:** MUST be the same for all instances of horizontally scaled services. If the value was not specified, SDKs MUST fallback to `unknown_service:` concatenated with [`process.executable.name`](process.md#process), e.g. `unknown_service:bash`. If `process.executable.name` is not available, the value MUST be set to `unknown_service`.
-<!-- endsemconv -->
-
-## ResourceVarying
-
-<!-- semconv browser.resource_varying -->
-The event name MUST be `BrowserResourceVarying`.
-
-| Key  | Type | Description  | Examples  | Requirement Level |
-|---|---|---|---|---|
-| `browser.screen_width` | int | Window width |  | Recommended |
-| `screen_height` | int | Window height |  | Recommended |
-| `session.id` | string | Session identifier | `Is this a GUID?` | Recommended |
-| `browser.page.url` | string | URL of the current active page | `https://en.wikipedia.org/wiki/Main_Page` | Recommended |
-| `browser.page.impression_id` | string | Unique impression id for the page impression, represented by a GUID. Eg: Page.html will yield 4 impression ids if the page is refreshed 4 times in the same browser instance. Could change in SPA usage (when url changes -> new impression) | `GUID` | Recommended |
-| [`enduser.id`](../../../trace/semantic_conventions/span-general.md) | string | Username or client_id extracted from the access token or [Authorization](https://tools.ietf.org/html/rfc7235#section-4.2) header in the inbound request from outside the system. [1] | `username` | Recommended |
-
-**[1]:** Authenticated user id
-<!-- endsemconv -->
 
 # Events
 
@@ -118,6 +64,98 @@ The event name MUST be `page_view`.
 | `0` | physical_page |
 | `1` | virtual_page |
 <!-- endsemconv -->
+
+<details>
+<summary>Sample PageView Event - Option 1</summary>
+
+```json
+    "log_record": {
+        "timeUnixNano":"1581452773000000789",
+        "attributes": [
+        {
+            "key": "event.domain",
+            "value": {
+            "stringValue": "browser"
+            }
+        },
+        {
+            "key": "event.name",
+            "value": {
+            "stringValue": "page_view"
+            }
+        },
+
+        {
+            "key": "event.data",
+            "value": {
+            "mapValue": {
+                "http.url": "https://www.guidgenerator.com/online-guid-generator.aspx",
+                "referrer": "http://google.com",
+                "type": 0,
+                "title": "Free Online GUID Generator"
+            }
+            }
+        }
+    }
+
+```
+</details>
+
+<details>
+<summary>Sample PageView Event - Option 2</summary>
+
+```json
+    "log_record": {
+        "timeUnixNano":"1581452773000000789",
+        "attributes": [
+        {
+            "key": "event.domain",
+            "value": {
+            "stringValue": "browser"
+            }
+        },
+        {
+            "key": "event.name",
+            "value": {
+            "stringValue": "page_view"
+            }
+        },
+
+        {
+            "key": "event.data",
+            "value": {
+                "nestedAttributes": [
+                    {
+                        "key": "http.url",
+                        "value": {
+                        "stringValue": "https://www.guidgenerator.com/online-guid-generator.aspx"
+                        }
+                    },
+                    {
+                        "key": "http.url",
+                        "value": {
+                        "stringValue": "https://www.guidgenerator.com/online-guid-generator.aspx"
+                        }
+                    },
+                    {
+                        "key": "type",
+                        "value": {
+                        "intValue": "0"
+                        }
+                    },
+                    {
+                        "key": "title",
+                        "value": {
+                        "stringValue": "Free Online GUID Generator"
+                        }
+                    },
+                ]
+            }
+        }
+    }
+
+```
+</details>
 
 ## PageLoad
 
@@ -255,3 +293,180 @@ The event name MUST be `user_action`.
 | `tags` | string[] | Grab data from data-otel-* attributes in tree | `[data-otel-asd="value" -> asd attr w/ "value"]` | Recommended |
 <!-- endsemconv -->
 
+
+# Resource
+
+## Resource
+<!-- semconv browser.resource -->
+| Key  | Type | Description  | Examples  | Requirement Level |
+|---|---|---|---|---|
+| `browser.visitor.id` | string | Anonymous user id - will be the same for a given browser session. It will persist across page navigations in the same browser session. | `is this a GUID?` | Recommended |
+| [`browser.brands`](../../../resource/semantic_conventions/browser.md) | string[] | Array of brand name and version separated by a space [1] | `[ Not A;Brand 99, Chromium 99, Chrome 99]` | Recommended |
+| [`browser.language`](../../../resource/semantic_conventions/browser.md) | string | Preferred language of the user using the browser [2] | `en`; `en-US`; `fr`; `fr-FR` | Recommended |
+| [`browser.mobile`](../../../resource/semantic_conventions/browser.md) | boolean | A boolean that is true if the browser is running on a mobile device [3] |  | Recommended |
+| [`browser.platform`](../../../resource/semantic_conventions/browser.md) | string | The platform on which the browser is running [4] | `Windows`; `macOS`; `Android` | Recommended |
+| [`browser.user_agent`](../../../resource/semantic_conventions/browser.md) | string | Full user-agent string provided by the browser [5] | `Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.54 Safari/537.36` | Recommended |
+| [`service.instance.id`](../../../resource/semantic_conventions/README.md) | string | Unique ID generated on page load for the lifetime of the document (eg. persistent during SPA) [6] | `627cc493-f310-47de-96bd-71410b7dec09` | Recommended |
+| [`service.name`](../../../resource/semantic_conventions/README.md) | string | Application name. Will be provided by customer. [7] | `shoppingcart` | Required |
+| [`service.version`](../../../resource/semantic_conventions/README.md) | string | Application version. Will be provided by customer. | `2.0.0` | Recommended |
+| [`telemetry.sdk.language`](../../../resource/semantic_conventions/README.md) | string | The language of the telemetry SDK. | `cpp` | Recommended |
+| [`telemetry.sdk.name`](../../../resource/semantic_conventions/README.md) | string | The name of the telemetry SDK as defined above. | `opentelemetry` | Recommended |
+| [`telemetry.sdk.version`](../../../resource/semantic_conventions/README.md) | string | The version string of the telemetry SDK. | `1.2.3` | Recommended |
+
+**[1]:** This value is intended to be taken from the [UA client hints API](https://wicg.github.io/ua-client-hints/#interface) (`navigator.userAgentData.brands`).
+
+**[2]:** This value is intended to be taken from the Navigator API `navigator.language`.
+
+**[3]:** This value is intended to be taken from the [UA client hints API](https://wicg.github.io/ua-client-hints/#interface) (`navigator.userAgentData.mobile`). If unavailable, this attribute SHOULD be left unset.
+
+**[4]:** This value is intended to be taken from the [UA client hints API](https://wicg.github.io/ua-client-hints/#interface) (`navigator.userAgentData.platform`). If unavailable, the legacy `navigator.platform` API SHOULD NOT be used instead and this attribute SHOULD be left unset in order for the values to be consistent.
+The list of possible values is defined in the [W3C User-Agent Client Hints specification](https://wicg.github.io/ua-client-hints/#sec-ch-ua-platform). Note that some (but not all) of these values can overlap with values in the [`os.type` and `os.name` attributes](./os.md). However, for consistency, the values in the `browser.platform` attribute should capture the exact value that the user agent provides.
+
+**[5]:** The user-agent value SHOULD be provided only from browsers that do not have a mechanism to retrieve brands and platform individually from the User-Agent Client Hints API. To retrieve the value, the legacy `navigator.userAgent` API can be used.
+
+**[6]:** MUST be unique for each instance of the same `service.namespace,service.name` pair (in other words `service.namespace,service.name,service.instance.id` triplet MUST be globally unique). The ID helps to distinguish instances of the same service that exist at the same time (e.g. instances of a horizontally scaled service). It is preferable for the ID to be persistent and stay the same for the lifetime of the service instance, however it is acceptable that the ID is ephemeral and changes during important lifetime events for the service (e.g. service restarts). If the service has no inherent unique ID that can be used as the value of this attribute it is recommended to generate a random Version 1 or Version 4 RFC 4122 UUID (services aiming for reproducible UUIDs may also use Version 5, see RFC 4122 for more recommendations).
+
+**[7]:** MUST be the same for all instances of horizontally scaled services. If the value was not specified, SDKs MUST fallback to `unknown_service:` concatenated with [`process.executable.name`](process.md#process), e.g. `unknown_service:bash`. If `process.executable.name` is not available, the value MUST be set to `unknown_service`.
+<!-- endsemconv -->
+
+
+<details>
+<summary>Sample Resource Attributes</summary>
+
+```json
+    "resource": {
+        "attributes": [
+        {
+            "// Customer configured",
+            "key": "service.name",
+            "value": {
+            "stringValue": "Web-tracing"
+            }
+        },
+        {
+            "// Customer configured",
+            "key": "service.version",
+            "value": {
+            "stringValue": "1.2.3"
+            }
+        },
+
+        {
+            "key": "telemetry.sdk.language",
+            "value": {
+            "stringValue": "webjs"
+            }
+        },
+        {
+            "key": "telemetry.sdk.name",
+            "value": {
+            "stringValue": "opentelemetry"
+            }
+        },
+        {
+            "key": "telemetry.sdk.version",
+            "value": {
+            "stringValue": "1.2.0"
+            }
+        },
+        {
+            "key": "browser.language",
+            "value": {
+            "stringValue": "en-US"
+            }
+        },
+        {
+            "key": "browser.brand",
+            "value": {
+                "arrayValue": [" Not A;Brand 99", "Chromium 99", "Chrome 99"]
+            }
+        },
+        {
+            "key": "browser.platform",
+            "value": {
+                "stringValue": "Android"
+            }
+        },
+        {
+            "key": "browser.mobile",
+            "value": {
+            "boolValue": "false"
+            }
+        },
+        {
+            "key": "browser.user_agent",
+            "value": {
+                "stringValue": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.54 Safari/537.36"
+            }
+        }
+        ],
+    }
+
+```
+</details>
+
+## ResourceVarying
+
+<!-- semconv browser.resource_varying -->
+| Key  | Type | Description  | Examples  | Requirement Level |
+|---|---|---|---|---|
+| `browser.screen_width` | int | Window width |  | Recommended |
+| `screen_height` | int | Window height |  | Recommended |
+| `session.id` | string | Session identifier | `Is this a GUID?` | Recommended |
+| `browser.page.url` | string | URL of the current active page | `https://en.wikipedia.org/wiki/Main_Page` | Recommended |
+| `browser.page.impression_id` | string | Unique impression id for the page impression, represented by a GUID. Eg: Page.html will yield 4 impression ids if the page is refreshed 4 times in the same browser instance. Could change in SPA usage (when url changes -> new impression) | `GUID` | Recommended |
+| [`enduser.id`](../../../trace/semantic_conventions/span-general.md) | string | Username or client_id extracted from the access token or [Authorization](https://tools.ietf.org/html/rfc7235#section-4.2) header in the inbound request from outside the system. [1] | `username` | Recommended |
+
+**[1]:** Authenticated user id
+<!-- endsemconv -->
+
+
+<details>
+<summary>Sample ResourceVarying Attributes</summary>
+
+```json
+    "resource": {
+        "varying_attributes": [
+        {
+            "key": "enduser.id",
+            "value": {
+            "stringValue": "bob.the.builder"
+            }
+        },
+        {
+            "key": "browser.page.impession_id",
+            "value": {
+            "stringValue": "cb05739e-600d-4b89-b994-755ba531af0b"
+            }
+        },
+
+        {
+            "key": "browser.page.url",
+            "value": {
+            "stringValue": "https://www.guidgenerator.com/online-guid-generator.aspx"
+            }
+        },
+        {
+            "key": "session.id",
+            "value": {
+            "stringValue": "0831c954-5263-41c7-a0f8-bad7a3e63146"
+            }
+        },
+        {
+            "key": "browser.screen_width",
+            "value": {
+            "intValue": 1080
+            }
+        },
+        {
+            "key": "browser.screen_height",
+            "value": {
+            "intValue": 800
+            }
+        },
+
+        ],
+    }
+
+```
+</details>

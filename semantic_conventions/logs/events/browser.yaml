@@ -1,7 +1,6 @@
 groups:
   - id: browser.resource
-    name: BrowserResource
-    type: event
+    type: span
     brief: >
       Resource attributes of Browser
     attributes:
@@ -34,8 +33,6 @@ groups:
       #  brief: The schema version for this event type
 
   - id: browser.resource_varying
-    name: BrowserResourceVarying
-    type: event
     brief: >
       Varying resource attributes of Browser
     attributes:
