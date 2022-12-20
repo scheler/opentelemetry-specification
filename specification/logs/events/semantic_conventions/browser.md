@@ -19,9 +19,11 @@
   * [HttpRequestTiming](#httprequesttiming)
   * [Exception](#exception)
   * [UserAction](#useraction)
+  * [WebVital](#webvital)
 - [Resource](#resource)
   * [Resource](#resource-1)
   * [ResourceVarying](#resourcevarying)
+- [Mapping to OTel Signal Types](#mapping-to-otel-signal-types)
 
 <!-- tocstop -->
 
@@ -47,12 +49,11 @@ All events have the following three high-level attributes. The event name is spe
 <!-- semconv browser.page_view -->
 The event name MUST be `page_view`.
 
-| Key  | Type | Description  | Examples  | Requirement Level |
+| Attribute  | Type | Description  | Examples  | Requirement Level |
 |---|---|---|---|---|
 | `referrer` | string | Referring Page URI (`document.referrer`) whenever available. | `https://en.wikipedia.org/wiki/Main_Page` | Recommended |
 | `type` | int | Browser page type | `0` | Required |
 | `title` | string | Page title DOM property | `Shopping cart page` | Recommended |
-| `user_consent` | boolean | Whether or not user provided consent on the page (consent for what?) |  | Recommended |
 | [`http.url`](../../../trace/semantic_conventions/http.md) | string | Full HTTP request URL in the form `scheme://host[:port]/path?query[#fragment]`. Usually the fragment is not transmitted over HTTP, but if it is known, it should be included nevertheless. [1] | `https://en.wikipedia.org/wiki/Main_Page`; `https://en.wikipedia.org/wiki/Main_Page#foo` | Required |
 
 **[1]:** The URL fragment may be included for virtual pages
@@ -162,7 +163,7 @@ The event name MUST be `page_view`.
 <!-- semconv browser.page_load -->
 The event name MUST be `page_load`.
 
-| Key  | Type | Description  | Examples  | Requirement Level |
+| Attribute  | Type | Description  | Examples  | Requirement Level |
 |---|---|---|---|---|
 | [`http.url`](../../../trace/semantic_conventions/http.md) | string | Full HTTP request URL in the form `scheme://host[:port]/path?query[#fragment]`. Usually the fragment is not transmitted over HTTP, but if it is known, it should be included nevertheless. [1] | `https://en.wikipedia.org/wiki/Main_Page`; `https://en.wikipedia.org/wiki/Main_Page#foo` | Required |
 
@@ -211,9 +212,9 @@ The event name MUST be `page_load`.
 <!-- semconv browser.http -->
 The event name MUST be `HTTP`.
 
-| Key  | Type | Description  | Examples  | Requirement Level |
+| Attribute  | Type | Description  | Examples  | Requirement Level |
 |---|---|---|---|---|
-| `type` | int | Request type | `0` | Required |
+| `request_type` | int | Request type | `0` | Required |
 | `http.response_content_length_uncompressed` | int | length of the response after it's uncompressed | `23421` | Recommended |
 | [`http.method`](../../../trace/semantic_conventions/http.md) | string | HTTP request method. | `GET`; `POST`; `HEAD` | Required |
 | [`http.request_content_length`](../../../trace/semantic_conventions/http.md) | int | The size of the request payload body in bytes. This is the number of bytes transferred excluding headers and is often, but not always, present as the [Content-Length](https://www.rfc-editor.org/rfc/rfc9110.html#field.content-length) header. For requests using transport encoding, this should be the compressed size. | `3495` | Recommended |
@@ -223,7 +224,7 @@ The event name MUST be `HTTP`.
 
 **[1]:** `http.url` MUST NOT contain credentials passed via URL in form of `https://username:password@www.example.com/`. In such case the attribute's value should be `https://www.example.com/`.
 
-`type` MUST be one of the following:
+`request_type` MUST be one of the following:
 
 | Value  | Description |
 |---|---|
@@ -269,7 +270,7 @@ Users MAY explicitly configure instrumentations to capture them even though it i
 <!-- semconv browser.exception -->
 The event name MUST be `exception`.
 
-| Key  | Type | Description  | Examples  | Requirement Level |
+| Attribute  | Type | Description  | Examples  | Requirement Level |
 |---|---|---|---|---|
 | `exception.file_name` | string | Name of the file that generated the error | `foo.js` | Recommended |
 | `exception.line_number` | int | Line number where the error occurred |  | Recommended |
@@ -284,13 +285,38 @@ The event name MUST be `exception`.
 <!-- semconv browser.user_action -->
 The event name MUST be `user_action`.
 
-| Key  | Type | Description  | Examples  | Requirement Level |
+| Attribute  | Type | Description  | Examples  | Requirement Level |
 |---|---|---|---|---|
 | `element` | string | Target element tag name (obtained via `event.target.tagName`) | `button` | Recommended |
 | `element_xpath` | string | Target element xpath | `//*[@id="testBtn"]` | Recommended |
-| `type` | string | Type of interaction. See enum [here](https://github.com/microsoft/ApplicationInsights-JS/blob/941ec2e4dbd017b8450f2b17c60088ead1e6c428/extensions/applicationinsights-clickanalytics-js/src/Enums.ts) | `clickleft` | Recommended |
+| `user_action_type` | string | Type of interaction. See enum [here](https://github.com/microsoft/ApplicationInsights-JS/blob/941ec2e4dbd017b8450f2b17c60088ead1e6c428/extensions/applicationinsights-clickanalytics-js/src/Enums.ts) for potential values we could add support for. | `click` | Required |
 | `click_coordinates` | string | Click coordinates captured as a string in the format {x}X{y}.  Eg. 345X23 | `345X23` | Recommended |
 | `tags` | string[] | Grab data from data-otel-* attributes in tree | `[data-otel-asd="value" -> asd attr w/ "value"]` | Recommended |
+
+`user_action_type` MUST be one of the following:
+
+| Value  | Description |
+|---|---|
+| `click` | click |
+<!-- endsemconv -->
+
+## WebVital
+
+<!-- semconv browser.web_vital -->
+The event name MUST be `web_vital`.
+
+| Attribute  | Type | Description  | Examples  | Requirement Level |
+|---|---|---|---|---|
+| `name` | string | name of the web vital | `CLS` | Required |
+| `value` | double | value of the web vital | `1.0`; `2.0` | Required |
+
+`name` MUST be one of the following:
+
+| Value  | Description |
+|---|---|
+| `CLS` | cls |
+| `LCP` | lcp |
+| `FID` | fid |
 <!-- endsemconv -->
 
 
@@ -298,7 +324,7 @@ The event name MUST be `user_action`.
 
 ## Resource
 <!-- semconv browser.resource -->
-| Key  | Type | Description  | Examples  | Requirement Level |
+| Attribute  | Type | Description  | Examples  | Requirement Level |
 |---|---|---|---|---|
 | `browser.visitor.id` | string | Anonymous user id - will be the same for a given browser session. It will persist across page navigations in the same browser session. | `is this a GUID?` | Recommended |
 | [`browser.brands`](../../../resource/semantic_conventions/browser.md) | string[] | Array of brand name and version separated by a space [1] | `[ Not A;Brand 99, Chromium 99, Chrome 99]` | Recommended |
@@ -408,7 +434,7 @@ The list of possible values is defined in the [W3C User-Agent Client Hints speci
 ## ResourceVarying
 
 <!-- semconv browser.resource_varying -->
-| Key  | Type | Description  | Examples  | Requirement Level |
+| Attribute  | Type | Description  | Examples  | Requirement Level |
 |---|---|---|---|---|
 | `browser.screen_width` | int | Window width |  | Recommended |
 | `screen_height` | int | Window height |  | Recommended |
@@ -470,3 +496,26 @@ The list of possible values is defined in the [W3C User-Agent Client Hints speci
 
 ```
 </details>
+
+# Mapping to OTel Signal Types
+
+Listing this out for the purpose of discussion.
+
+| Object  | Current Name (if any)|OTel Signal Type | Description  | Note  |
+|---|---|---|---|--|
+|PageView[4]||Event| Emitted on body onLoad. Contains Trace Context of PageLoad Span (see next item)  |---|
+|PageLoad|documentLoad|Span| Emitted on body onLoad after the Performance Navigation Timing info is available. |---|
+| - | documentFetch | Span | Span for page fetch ||
+|PerformanceNavigationTiming [1]||Span-Event|Performance Navigation Timing of the page|Emitted either as a Span Event attached to `PageLoad` (default) or as a separate Event linked with the `PageLoad` span|
+| - | resourceFetch | Span | Span for resource fetch|||
+|ResourceTiming [2]||Span-Event| Performance Timing of the resource loaded | |
+|HTTP|xhr/fetch|Span|Emitted for xhr/fetch/sendBeacon calls|May include an `Exception` event if any exception occurs during the HTTP request|
+|HttpRequestTiming||Span-Event|Attached to HTTP span||
+|Exception||Event|Emitted for any unhandled exception occuring outside of an HTTP request|Unlike other Events, the `exception.` attributes will all be top-level attributes and will not be in `event.data`. This is to stay consistent with `Exception` Span-Events.|
+|UserAction|UserInteraction|Event|User actions||
+|WebVital[3]||Event|Web Vitals||
+
+**[1]:** When is it helpful to have `PerformanceNavigationTiming` as a separate Event vs Span-Event?
+**[2]** Do we want to attach ResourceTiming to PageLoad span or to a new child Span? If it's attached to `PageLoad` 
+**[3]** Do we add all the fields from the [Metric](https://github.com/GoogleChrome/web-vitals#metric) including the attribution details?
+**[4]** Why not just use PageLoad span instead of PageView?
