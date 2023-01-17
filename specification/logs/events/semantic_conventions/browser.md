@@ -66,44 +66,9 @@ The event name MUST be `page_view`.
 | `1` | virtual_page |
 <!-- endsemconv -->
 
-<details>
-<summary>Sample PageView Event - Option 1</summary>
-
-```json
-    "log_record": {
-        "timeUnixNano":"1581452773000000789",
-        "attributes": [
-        {
-            "key": "event.domain",
-            "value": {
-            "stringValue": "browser"
-            }
-        },
-        {
-            "key": "event.name",
-            "value": {
-            "stringValue": "page_view"
-            }
-        },
-
-        {
-            "key": "event.data",
-            "value": {
-            "mapValue": {
-                "http.url": "https://www.guidgenerator.com/online-guid-generator.aspx",
-                "referrer": "http://google.com",
-                "type": 0,
-                "title": "Free Online GUID Generator"
-            }
-            }
-        }
-    }
-
-```
-</details>
 
 <details>
-<summary>Sample PageView Event - Option 2</summary>
+<summary>Sample PageView Event</summary>
 
 ```json
     "log_record": {
@@ -153,6 +118,7 @@ The event name MUST be `page_view`.
                 ]
             }
         }
+        ]
     }
 
 ```
@@ -439,8 +405,8 @@ The list of possible values is defined in the [W3C User-Agent Client Hints speci
 | `browser.screen_width` | int | Window width |  | Recommended |
 | `screen_height` | int | Window height |  | Recommended |
 | `session.id` | string | Session identifier | `Is this a GUID?` | Recommended |
-| `browser.page.url` | string | URL of the current active page | `https://en.wikipedia.org/wiki/Main_Page` | Recommended |
-| `browser.page.impression_id` | string | Unique impression id for the page impression, represented by a GUID. Eg: Page.html will yield 4 impression ids if the page is refreshed 4 times in the same browser instance. Could change in SPA usage (when url changes -> new impression) | `GUID` | Recommended |
+| `browser.url` | string | URL of the current active page | `https://en.wikipedia.org/wiki/Main_Page` | Recommended |
+| `browser.page_impression_id` | string | Unique impression id for the page impression, represented by a GUID. Eg: Page.html will yield 4 impression ids if the page is refreshed 4 times in the same browser instance. Could change in SPA usage (when url changes -> new impression) | `GUID` | Recommended |
 | [`enduser.id`](../../../trace/semantic_conventions/span-general.md) | string | Username or client_id extracted from the access token or [Authorization](https://tools.ietf.org/html/rfc7235#section-4.2) header in the inbound request from outside the system. [1] | `username` | Recommended |
 
 **[1]:** Authenticated user id
@@ -460,14 +426,14 @@ The list of possible values is defined in the [W3C User-Agent Client Hints speci
             }
         },
         {
-            "key": "browser.page.impession_id",
+            "key": "browser.page_impession_id",
             "value": {
             "stringValue": "cb05739e-600d-4b89-b994-755ba531af0b"
             }
         },
 
         {
-            "key": "browser.page.url",
+            "key": "browser.url",
             "value": {
             "stringValue": "https://www.guidgenerator.com/online-guid-generator.aspx"
             }
@@ -503,19 +469,28 @@ Listing this out for the purpose of discussion.
 
 | Object  | Current Name (if any)|OTel Signal Type | Description  | Note  |
 |---|---|---|---|--|
-|PageView[4]||Event| Emitted on body onLoad. Contains Trace Context of PageLoad Span (see next item)  |---|
+|PageView||Event| Emitted at the earliest opportunity when a page loads. Contains Trace Context of PageLoad Span (see next item)  |---|
 |PageLoad|documentLoad|Span| Emitted on body onLoad after the Performance Navigation Timing info is available. |---|
-| - | documentFetch | Span | Span for page fetch ||
-|PerformanceNavigationTiming [1]||Span-Event|Performance Navigation Timing of the page|Emitted either as a Span Event attached to `PageLoad` (default) or as a separate Event linked with the `PageLoad` span|
-| - | resourceFetch | Span | Span for resource fetch|||
-|ResourceTiming [2]||Span-Event| Performance Timing of the resource loaded | |
-|HTTP|xhr/fetch|Span|Emitted for xhr/fetch/sendBeacon calls|May include an `Exception` event if any exception occurs during the HTTP request|
+| - |  | Span | Span for page fetch ||
+|Performance-NavigationTiming||Span-Event|Performance Navigation Timing of the page|Emitted either as a Span Event attached to `PageLoad` (default) or as a separate Event linked with the `PageLoad` span|
+|HTTP|xhr, fetch, documentFetch, resourceFetch|Span|Emitted for xhr, fetch,sendBeacon calls and also for Page and Resource fetch|May include an `Exception` event if any exception occurs during the HTTP request|
 |HttpRequestTiming||Span-Event|Attached to HTTP span||
+|ResourceTiming||Span-Event| Performance Timing of the resource loaded | |
 |Exception||Event|Emitted for any unhandled exception occuring outside of an HTTP request|Unlike other Events, the `exception.` attributes will all be top-level attributes and will not be in `event.data`. This is to stay consistent with `Exception` Span-Events.|
 |UserAction|UserInteraction|Event|User actions||
-|WebVital[3]||Event|Web Vitals||
+|WebVital||Event|Web Vitals||
 
-**[1]:** When is it helpful to have `PerformanceNavigationTiming` as a separate Event vs Span-Event?
-**[2]** Do we want to attach ResourceTiming to PageLoad span or to a new child Span? If it's attached to `PageLoad` 
-**[3]** Do we add all the fields from the [Metric](https://github.com/GoogleChrome/web-vitals#metric) including the attribution details?
-**[4]** Why not just use PageLoad span instead of PageView?
+
+
+
+
+## Flow of browser telemetry
+
+1. When a Page loads, a `PageView` event is emitted right away at the earliest opportunity. A `PageLoad` span is also started,and its trace context is attached to the `PageView` event emitted. 
+2. The `PageLoad` span is emitted after the browser calls body onLoad. This span has `PerformanceNavigationTiming` attached as a span-event.
+3. For each request made the browser further, an `HTTP` span is emitted. These requests could be any of the following: a) Initial Page/html fetch b)XHR, Fetch, sendBeacon c) resource fetch (js, css, images, etc)
+
+    3.1 This `HTTP` will also have a Timing event attached. This will be `HttpRequestTiming` event in the case of initial page html, XHR, Fetch and sendBeacon calls and `ResourceTiming` event in the case of calls to fetch resources.
+    3.2 Each of the `HTTP` spans will also point to the original `PageLoad` span emitted through one of the following:
+    - The `link` in their spans will point to the `PageLoad` span
+    - Both the `PageLoad` and all `HTTP` spans emitted will have the same `service.instance.id` resource attribute.
