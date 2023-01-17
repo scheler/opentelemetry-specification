@@ -54,7 +54,7 @@ The event name MUST be `page_view`.
 | `referrer` | string | Referring Page URI (`document.referrer`) whenever available. | `https://en.wikipedia.org/wiki/Main_Page` | Recommended |
 | `type` | int | Browser page type | `0` | Required |
 | `title` | string | Page title DOM property | `Shopping cart page` | Recommended |
-| [`http.url`](../../../trace/semantic_conventions/http.md) | string | Full HTTP request URL in the form `scheme://host[:port]/path?query[#fragment]`. Usually the fragment is not transmitted over HTTP, but if it is known, it should be included nevertheless. [1] | `https://en.wikipedia.org/wiki/Main_Page`; `https://en.wikipedia.org/wiki/Main_Page#foo` | Required |
+| url. Alias for [`http.url`](../../../trace/semantic_conventions/http.md) | string | Full HTTP request URL in the form `scheme://host[:port]/path?query[#fragment]`. Usually the fragment is not transmitted over HTTP, but if it is known, it should be included nevertheless. [1] | `https://en.wikipedia.org/wiki/Main_Page`; `https://en.wikipedia.org/wiki/Main_Page#foo` | Required |
 
 **[1]:** The URL fragment may be included for virtual pages
 
@@ -131,7 +131,7 @@ The event name MUST be `page_load`.
 
 | Attribute  | Type | Description  | Examples  | Requirement Level |
 |---|---|---|---|---|
-| [`http.url`](../../../trace/semantic_conventions/http.md) | string | Full HTTP request URL in the form `scheme://host[:port]/path?query[#fragment]`. Usually the fragment is not transmitted over HTTP, but if it is known, it should be included nevertheless. [1] | `https://en.wikipedia.org/wiki/Main_Page`; `https://en.wikipedia.org/wiki/Main_Page#foo` | Required |
+| url. Alias for [`http.url`](../../../trace/semantic_conventions/http.md) | string | Full HTTP request URL in the form `scheme://host[:port]/path?query[#fragment]`. Usually the fragment is not transmitted over HTTP, but if it is known, it should be included nevertheless. [1] | `https://en.wikipedia.org/wiki/Main_Page`; `https://en.wikipedia.org/wiki/Main_Page#foo` | Required |
 
 **[1]:** The URL fragment may be included for virtual pages
 <!-- endsemconv -->
@@ -181,14 +181,14 @@ The event name MUST be `HTTP`.
 | Attribute  | Type | Description  | Examples  | Requirement Level |
 |---|---|---|---|---|
 | `request_type` | int | Request type | `0` | Required |
-| `http.response_content_length_uncompressed` | int | length of the response after it's uncompressed | `23421` | Recommended |
-| [`http.method`](../../../trace/semantic_conventions/http.md) | string | HTTP request method. | `GET`; `POST`; `HEAD` | Required |
-| [`http.request_content_length`](../../../trace/semantic_conventions/http.md) | int | The size of the request payload body in bytes. This is the number of bytes transferred excluding headers and is often, but not always, present as the [Content-Length](https://www.rfc-editor.org/rfc/rfc9110.html#field.content-length) header. For requests using transport encoding, this should be the compressed size. | `3495` | Recommended |
-| [`http.response_content_length`](../../../trace/semantic_conventions/http.md) | int | The size of the response payload body in bytes. This is the number of bytes transferred excluding headers and is often, but not always, present as the [Content-Length](https://www.rfc-editor.org/rfc/rfc9110.html#field.content-length) header. For requests using transport encoding, this should be the compressed size. | `3495` | Recommended |
-| [`http.status_code`](../../../trace/semantic_conventions/http.md) | int | [HTTP response status code](https://tools.ietf.org/html/rfc7231#section-6). | `200` | Conditionally Required: If and only if one was received/sent. |
-| [`http.url`](../../../trace/semantic_conventions/http.md) | string | Full HTTP request URL in the form `scheme://host[:port]/path?query[#fragment]`. Usually the fragment is not transmitted over HTTP, but if it is known, it should be included nevertheless. [1] | `https://www.foo.bar/search?q=OpenTelemetry#SemConv` | Required |
+| `response_content_length_uncompressed`. Alias for `http.response_content_length_uncompressed` | int | length of the response after it's uncompressed | `23421` | Recommended |
+| `method`. Alias for [`http.method`](../../../trace/semantic_conventions/http.md) | string | HTTP request method. | `GET`; `POST`; `HEAD` | Required |
+| `request_content_length`. Alias for [`http.request_content_length`](../../../trace/semantic_conventions/http.md) | int | The size of the request payload body in bytes. This is the number of bytes transferred excluding headers and is often, but not always, present as the [Content-Length](https://www.rfc-editor.org/rfc/rfc9110.html#field.content-length) header. For requests using transport encoding, this should be the compressed size. | `3495` | Recommended |
+| `response_content_length`. Alias for [`http.response_content_length`](../../../trace/semantic_conventions/http.md) | int | The size of the response payload body in bytes. This is the number of bytes transferred excluding headers and is often, but not always, present as the [Content-Length](https://www.rfc-editor.org/rfc/rfc9110.html#field.content-length) header. For requests using transport encoding, this should be the compressed size. | `3495` | Recommended |
+| `status_code`. Alias for [`http.status_code`](../../../trace/semantic_conventions/http.md) | int | [HTTP response status code](https://tools.ietf.org/html/rfc7231#section-6). | `200` | Conditionally Required: If and only if one was received/sent. |
+| `url`. Alias for [`http.url`](../../../trace/semantic_conventions/http.md) | string | Full HTTP request URL in the form `scheme://host[:port]/path?query[#fragment]`. Usually the fragment is not transmitted over HTTP, but if it is known, it should be included nevertheless. [1] | `https://www.foo.bar/search?q=OpenTelemetry#SemConv` | Required |
 
-**[1]:** `http.url` MUST NOT contain credentials passed via URL in form of `https://username:password@www.example.com/`. In such case the attribute's value should be `https://www.example.com/`.
+**[1]:** `url` MUST NOT contain credentials passed via URL in form of `https://username:password@www.example.com/`. In such case the attribute's value should be `https://www.example.com/`.
 
 `request_type` MUST be one of the following:
 
@@ -203,13 +203,13 @@ The event name MUST be `HTTP`.
 
 | Key  | Type | Description  | Examples  | Requirement Level |
 |---|---|---|---|---|
-| `http.request.header.<key>` | string[] | HTTP request headers, `<key>` being the normalized HTTP Header name (lowercase, with `-` characters replaced by `_`), the value being the header values. [1] [2] | `http.request.header.content_type=["application/json"]`; `http.request.header.x_forwarded_for=["1.2.3.4", "1.2.3.5"]` | Optional |
-| `http.response.header.<key>` | string[] | HTTP response headers, `<key>` being the normalized HTTP Header name (lowercase, with `-` characters replaced by `_`), the value being the header values. [1] [2] | `http.response.header.content_type=["application/json"]`; `http.response.header.my_custom_header=["abc", "def"]` | Optional |
+| `request.header.<key>`. Alias for `http.request.header.<key>` | string[] | HTTP request headers, `<key>` being the normalized HTTP Header name (lowercase, with `-` characters replaced by `_`), the value being the header values. [1] | `http.request.header.content_type=["application/json"]`; `http.request.header.x_forwarded_for=["1.2.3.4", "1.2.3.5"]` | Optional |
+| `response.header.<key>`. Alias for `http.response.header.<key>` | string[] | HTTP response headers, `<key>` being the normalized HTTP Header name (lowercase, with `-` characters replaced by `_`), the value being the header values. [1] | `http.response.header.content_type=["application/json"]`; `http.response.header.my_custom_header=["abc", "def"]` | Optional |
 
 **[1]:** Instrumentations SHOULD require an explicit configuration of which headers are to be captured.
 Including all request/response headers can be a security risk - explicit configuration helps avoid leaking sensitive information.
 
-The `User-Agent` header is already captured in the `http.user_agent` attribute.
+The `User-Agent` header is already captured in the `browser.user_agent` resource attribute.
 Users MAY explicitly configure instrumentations to capture them even though it is not recommended.
 
 ## HttpRequestTiming
