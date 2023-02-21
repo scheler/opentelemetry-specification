@@ -38,10 +38,10 @@ groups:
     attributes:
       - id: browser.screen_width
         type: int
-        brief: Window width
-      - id: screen_height
+        brief: Screen width of the device/browser view port
+      - id: browser.screen_height
         type: int
-        brief: Window height
+        brief: Screen height of the device/browser view port
       # TODO: need a top level namespace
       - id: session.id
         type: string
