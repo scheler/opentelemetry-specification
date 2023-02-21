@@ -403,7 +403,7 @@ The list of possible values is defined in the [W3C User-Agent Client Hints speci
 | Attribute  | Type | Description  | Examples  | Requirement Level |
 |---|---|---|---|---|
 | `browser.screen_width` | int |  Screen width of the device/browser view port |  | Recommended |
-| `screen_height` | int |  Screen height of the device/browser view port |  | Recommended |
+| `browser.screen_height` | int |  Screen height of the device/browser view port |  | Recommended |
 | `session.id` | string | Session identifier | `Is this a GUID?` | Recommended |
 | `browser.url` | string | URL of the current active page | `https://en.wikipedia.org/wiki/Main_Page` | Recommended |
 | `browser.page_impression_id` | string | Unique impression id for the page impression, represented by a GUID. Eg: Page.html will yield 4 impression ids if the page is refreshed 4 times in the same browser instance. Could change in SPA usage (when url changes -> new impression) | `GUID` | Recommended |
