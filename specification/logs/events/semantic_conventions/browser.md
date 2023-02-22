@@ -90,7 +90,7 @@ The event name MUST be `page_view`.
         {
             "key": "event.data",
             "value": {
-                "nestedAttributes": [
+                "kvlistValue": [
                     {
                         "key": "http.url",
                         "value": {
