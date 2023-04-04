@@ -1,0 +1,204 @@
+groups:
+  - id: browser.resource
+    type: span
+    brief: >
+      Resource attributes of Browser
+    attributes:
+      - ref: telemetry.sdk.name
+      - ref: telemetry.sdk.language
+      - ref: telemetry.sdk.version
+      - ref: browser.brands
+      - ref: browser.platform
+      - ref: browser.mobile
+      - ref: browser.language
+      - ref: browser.user_agent
+      - ref: service.name
+        brief: Application name. Will be provided by customer.
+      - ref: service.version
+        brief: Application version. Will be provided by customer.
+      - ref: service.instance.id
+        brief: >
+          Unique ID generated on page load for the lifetime of the document
+          (eg. persistent during SPA)
+      - id: browser.visitor.id
+        type: string
+        brief: >
+          Anonymous user id - will be the same for a given browser session.
+          It will persist across page navigations in the same browser session.
+        examples: ["is this a GUID?"]
+
+      # TODO: clarify the following.
+      # - id: schema.version
+      #  type: string
+      #  brief: The schema version for this event type
+
+  - id: browser.resource_varying
+    brief: >
+      Varying resource attributes of Browser
+    attributes:
+      - id: browser.screen_width
+        type: int
+        brief: Screen width of the device/browser view port
+      - id: browser.screen_height
+        type: int
+        brief: Screen height of the device/browser view port
+      # TODO: need a top level namespace
+      - id: session.id
+        type: string
+        brief: Session identifier
+        examples: ["Is this a GUID?"]
+      - ref: enduser.id
+        note: Authenticated user id
+      - id: browser.page.url
+        type: string
+        brief: URL of the current active page
+        examples: ["https://en.wikipedia.org/wiki/Main_Page"]
+      - id: browser.page.impression_id
+        type: string
+        brief: >
+          Unique impression id for the page impression, represented by a GUID.
+          Eg: Page.html will yield 4 impression ids if the page is refreshed 4
+          times in the same browser instance.
+          Could change in SPA usage (when url changes -> new impression)
+        examples: ["GUID"]
+
+  - id: browser.page_view
+    name: page_view
+    type: event
+    brief: Page view
+    attributes:
+      - ref: http.url
+        examples: ['https://en.wikipedia.org/wiki/Main_Page', 'https://en.wikipedia.org/wiki/Main_Page#foo']
+        note: The URL fragment may be included for virtual pages
+      - id: referrer
+        type: string
+        brief: Referring Page URI (`document.referrer`) whenever available.
+        examples: ['https://en.wikipedia.org/wiki/Main_Page']
+      - id: type
+        brief: Browser page type
+        requirement_level: required
+        type:
+          allow_custom_values: false
+          members:
+            - id: physical_page
+              value: 0
+            - id: virtual_page
+              value: 1
+      - id: title
+        type: string
+        brief: Page title DOM property
+        examples: ["Shopping cart page"]
+  - id: browser.page_load
+    name: page_load
+    type: event
+    brief: The encompassing span for a Page Load
+    attributes:
+      - ref: http.url
+        examples: ['https://en.wikipedia.org/wiki/Main_Page', 'https://en.wikipedia.org/wiki/Main_Page#foo']
+        note: The URL fragment may be included for virtual pages
+
+  - id: browser.http
+    name: HTTP
+    type: event
+    brief: >
+      HTTP Request of different kinds (xml-http-request, fetch, sendBeacon, etc)
+    attributes:
+      - ref: http.url
+      - ref: http.method
+      - ref: http.status_code
+      - ref: http.request_content_length
+      - ref: http.response_content_length
+      # TODO: Add the following to http sem conv
+      # - ref: http.response_content_length_uncompressed
+      # TODO: how do we add http.request.header.<key> and http.response.header.<key> here
+      - id: request_type
+        brief: Request type
+        requirement_level: required
+        type:
+          allow_custom_values: false
+          members:
+            - id: fetch
+              value: 0
+            - id: xhr
+              value: 1
+            - id: send_beacon
+              value: 2
+      - id: http.response_content_length_uncompressed
+        type: int
+        brief: length of the response after it's uncompressed
+        examples: [23421]
+  - id: browser.exception
+    name: exception
+    type: event
+    brief: Browser exception
+    attributes:
+      - ref: exception.message
+      - ref: exception.type
+      - ref: exception.stacktrace
+      # The following attributes are without a namespace
+      # Should we use the prefix `browser.exception`?
+      - id: exception.file_name
+        type: string
+        brief: Name of the file that generated the error
+        examples: ['foo.js']
+      - id: exception.line_number
+        type: int
+        brief: Line number where the error occurred
+      - id: exception.column_number
+        type: int
+        brief: Column number where the error occurred
+  - id: browser.user_action
+    name: user_action
+    type: event
+    brief: Browser User Interaction
+    attributes:
+      - id: element
+        type: string
+        brief: Target element tag name (obtained via `event.target.tagName`)
+        examples: ['button']
+      - id: element_xpath
+        type: string
+        brief: Target element xpath
+        examples: ['//*[@id="testBtn"]']
+      - id: user_action_type
+        requirement_level: required
+        type:
+          allow_custom_values: false
+          members:
+            - id: click
+              value: click
+        brief: Type of interaction. See enum [here](https://github.com/microsoft/ApplicationInsights-JS/blob/941ec2e4dbd017b8450f2b17c60088ead1e6c428/extensions/applicationinsights-clickanalytics-js/src/Enums.ts) for potential values we could add support for.
+        examples: ['click']
+      - id: click_coordinates
+        type: string
+        brief: Click coordinates captured as a string in the format {x}X{y}.  Eg. 345X23
+        examples: ['345X23']
+      - id: tags
+        type: string[]
+        brief: Grab data from data-otel-* attributes in tree
+        examples: ['data-otel-asd="value" -> asd attr w/ "value"']
+  - id: browser.web_vital
+    name: web_vital
+    type: event
+    brief: Web Vitals
+    attributes:
+      - id: name
+        brief: name of the web vital
+        requirement_level: required
+        type:
+          allow_custom_values: false
+          members:
+            - id: cls
+              value: CLS
+            - id: lcp
+              value: LCP
+            - id: fid
+              value: FID
+      - id: value
+        brief: value of the web vital
+        requirement_level: required
+        type: double
+        examples:
+          - 1.0
+          - 2.0
+
